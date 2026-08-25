@@ -313,8 +313,9 @@ mod windows {
 
         let utf16_key = b"a\0u\0t\0h\0s\0t\0";
         for start in find_all(data, utf16_key) {
-            let units = data[start..]
-                .chunks_exact(2)
+            let (pairs, _) = data[start..].as_chunks::<2>();
+            let units = pairs
+                .iter()
                 .take(1024)
                 .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
                 .collect::<Vec<_>>();
