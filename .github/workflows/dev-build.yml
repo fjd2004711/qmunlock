@@ -1,0 +1,102 @@
+name: Dev desktop builds
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-ffmpeg:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Windows cross compiler
+        run: brew install mingw-w64
+      - name: Build FFmpeg resources
+        run: JOBS="$(sysctl -n hw.ncpu)" ./scripts/build-ffmpeg.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dev-ffmpeg-resources
+          path: desktop/src-tauri/resources/ffmpeg
+          retention-days: 1
+
+  bundle-macos:
+    needs: build-ffmpeg
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            artifact: qmunlock-dev-macos-arm64
+          - target: x86_64-apple-darwin
+            artifact: qmunlock-dev-macos-x64
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: dev-ffmpeg-resources
+          path: desktop/src-tauri/resources/ffmpeg
+      - name: Keep macOS FFmpeg only
+        run: |
+          rm -rf src-tauri/resources/ffmpeg/windows-x64
+          chmod 0755 src-tauri/resources/ffmpeg/macos-universal/ffmpeg
+      - run: npm run tauri -- build --target ${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.dmg
+          if-no-files-found: error
+          retention-days: 14
+
+  bundle-windows:
+    needs: build-ffmpeg
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: dev-ffmpeg-resources
+          path: desktop/src-tauri/resources/ffmpeg
+      - name: Keep Windows FFmpeg only
+        shell: pwsh
+        run: Remove-Item -Recurse -Force src-tauri/resources/ffmpeg/macos-universal
+      - run: npm run tauri -- build --target x86_64-pc-windows-msvc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qmunlock-dev-windows-x64
+          path: |
+            desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/*.msi
+            desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/*.exe
+          if-no-files-found: error
+          retention-days: 14
