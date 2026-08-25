@@ -65,11 +65,11 @@ common_configure=(
   --enable-swresample
   --enable-libmp3lame
   --enable-protocol=file
-  --enable-demuxer=ogg,flac,mp3
+  --enable-demuxer=ogg,flac,mp3,mov
   --enable-muxer=mp3
-  --enable-decoder=flac,vorbis,mp3
+  --enable-decoder=flac,vorbis,mp3,aac,alac,ac3,eac3
   --enable-encoder=libmp3lame
-  --enable-parser=flac,vorbis,mpegaudio
+  --enable-parser=flac,vorbis,mpegaudio,aac,ac3
   --enable-filter=aresample,anull
 )
 
@@ -145,6 +145,15 @@ build_target() {
   popd >/dev/null
 }
 
+verify_m4a_to_mp3_support() {
+  local binary="$1"
+  local decoder
+  "$binary" -hide_banner -demuxers 2>&1 | grep -Eq '[[:space:]]mov[[:space:],]'
+  for decoder in aac alac ac3 eac3; do
+    "$binary" -hide_banner -decoders 2>&1 | grep -Eq "[[:space:]]$decoder[[:space:]]"
+  done
+}
+
 mkdir -p "$RESOURCE_DIR/macos-universal" "$RESOURCE_DIR/windows-x64"
 build_lame "macos-arm64" "$BUILD_ROOT/lame-prefix-arm64"
 build_lame "macos-x86_64" "$BUILD_ROOT/lame-prefix-x86_64" \
@@ -165,6 +174,7 @@ build_target "macos-x86_64" \
 lipo -create "$BUILD_ROOT/ffmpeg-arm64" "$BUILD_ROOT/ffmpeg-x86_64" \
   -output "$RESOURCE_DIR/macos-universal/ffmpeg"
 chmod 0755 "$RESOURCE_DIR/macos-universal/ffmpeg"
+verify_m4a_to_mp3_support "$RESOURCE_DIR/macos-universal/ffmpeg"
 
 if ! command -v x86_64-w64-mingw32-gcc >/dev/null 2>&1; then
   printf 'x86_64-w64-mingw32-gcc is required for the Windows build\n' >&2
@@ -179,6 +189,7 @@ build_target "windows-x64" \
   --cross-prefix=x86_64-w64-mingw32- --cc=x86_64-w64-mingw32-gcc \
   --enable-w32threads --disable-x86asm --extra-ldflags=-static
 chmod 0755 "$RESOURCE_DIR/windows-x64/ffmpeg.exe"
+verify_m4a_to_mp3_support "$RESOURCE_DIR/windows-x64/ffmpeg.exe"
 
 cp "$SOURCE_DIR/COPYING.LGPLv2.1" "$RESOURCE_DIR/COPYING.LGPLv2.1"
 cp "$LAME_SOURCE_DIR/COPYING" "$RESOURCE_DIR/COPYING.LAME"

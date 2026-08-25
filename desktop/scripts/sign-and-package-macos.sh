@@ -23,6 +23,13 @@ app_name="$(basename "$app_path" .app)"
 version="$(node -p 'require("./package.json").version')"
 dmg_dir="$bundle_dir/dmg"
 dmg_path="$dmg_dir/${app_name}_${version}_${arch}.dmg"
+staging_dir="$(mktemp -d -t qmunlock-dmg-stage)"
+staged_app_path="$staging_dir/$app_name.app"
+
+ditto "$app_path" "$staged_app_path"
+ln -s /Applications "$staging_dir/Applications"
+cp scripts/DMG_INSTALL_ZH-CN.txt "$staging_dir/① 安装与故障排查.txt"
+app_path="$staged_app_path"
 
 echo "Ad-hoc signing $app_path"
 codesign --force --deep --sign - --timestamp=none "$app_path"
@@ -57,7 +64,7 @@ mkdir -p "$dmg_dir"
 echo "Creating DMG from the verified app bundle"
 hdiutil create \
   -volname "$app_name" \
-  -srcfolder "$app_path" \
+  -srcfolder "$staging_dir" \
   -ov \
   -format UDZO \
   "$dmg_path"

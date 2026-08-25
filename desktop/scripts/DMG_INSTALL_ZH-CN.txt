@@ -1,0 +1,42 @@
+QM Unlock 安装与故障排查
+============================
+
+安装
+----
+1. 将 “QM Unlock.app” 拖到同一窗口中的 “Applications” 文件夹。
+2. 打开“应用程序”文件夹，再打开 QM Unlock。
+3. Apple 芯片（M1 / M2 / M3 / M4）请选择 arm64 DMG；Intel Mac 请选择 x64 DMG。
+
+macOS 提示“无法验证开发者”
+--------------------------
+这是未使用 Developer ID 的 ad-hoc 签名开发包的正常提示，不代表应用被篡改。
+
+打开“系统设置 → 隐私与安全性”，在底部找到 QM Unlock，点击“仍要打开”。
+
+也可以将 App 拖入“应用程序”后，在终端运行：
+
+  open "/Applications/QM Unlock.app"
+
+macOS 提示“App 已损坏”
+-----------------------
+先确认 App 已完整复制到“应用程序”，不要直接从下载 ZIP 或 DMG 内启动。然后在终端运行：
+
+  xattr -cr "/Applications/QM Unlock.app"
+  codesign --verify --deep --strict --verbose=2 "/Applications/QM Unlock.app"
+  open "/Applications/QM Unlock.app"
+
+第二条命令显示 “valid on disk” 即表示本机文件没有被破坏。若仍失败，请重新下载与电脑架构对应的 DMG。
+
+M4A 转 MP3 失败
+---------------
+QM Unlock 会先解密为原始 M4A，再用随包 FFmpeg 转为 MP3。新版 FFmpeg 已包含 M4A/MP4 容器及 AAC、ALAC、AC-3、E-AC-3 解码支持。
+
+请先在应用中关闭“转 MP3”，确认原始 M4A 能正常生成；再重新开启转码。也可以在终端检查随包 FFmpeg：
+
+  "/Applications/QM Unlock.app/Contents/Resources/resources/ffmpeg/macos-universal/ffmpeg" -hide_banner -decoders | grep -E "aac|alac|ac3|eac3"
+
+自动获取 ekey 失败
+-------------------
+确认 QQ 音乐已登录。Windows 用户还需要让 QQ 音乐与 QM Unlock 以相同权限运行：若 QQ 音乐是“以管理员身份运行”，QM Unlock 也需要如此运行。自动方式失败时，可使用与当前文件匹配的手动 ekey。
+
+请勿在 issue、日志或截图中发送 ekey、authst、账号信息或真实音频文件。

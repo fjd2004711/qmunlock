@@ -68,6 +68,8 @@ QM Unlock 是一个 Rust + Tauri 2 桌面应用，处理带 `musicex V1 footer` 
 | 🍎 macOS（Intel） | `QM Unlock_*_x64.dmg` | x64 |
 | 🪟 Windows | `QM Unlock_*_x64-setup.exe` | x64 |
 
+macOS DMG 内含 `Applications` 快捷方式与 `① 安装与故障排查.txt`：将 App 拖到 `Applications` 后运行。说明文件提供 Gatekeeper、“App 已损坏”、M4A 转 MP3 和自动 ekey 常见问题的系统设置与终端命令。
+
 ### 开发包的首次运行
 
 macOS 包会在 DMG 创建前完成 ad-hoc 签名与完整性验证，但它不带 Developer ID；Windows 包目前也不带 Authenticode 签名。因此系统首次运行仍可能显示来源提示。
