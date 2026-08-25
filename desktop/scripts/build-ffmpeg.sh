@@ -189,7 +189,6 @@ build_target "windows-x64" \
   --cross-prefix=x86_64-w64-mingw32- --cc=x86_64-w64-mingw32-gcc \
   --enable-w32threads --disable-x86asm --extra-ldflags=-static
 chmod 0755 "$RESOURCE_DIR/windows-x64/ffmpeg.exe"
-verify_m4a_to_mp3_support "$RESOURCE_DIR/windows-x64/ffmpeg.exe"
 
 cp "$SOURCE_DIR/COPYING.LGPLv2.1" "$RESOURCE_DIR/COPYING.LGPLv2.1"
 cp "$LAME_SOURCE_DIR/COPYING" "$RESOURCE_DIR/COPYING.LAME"

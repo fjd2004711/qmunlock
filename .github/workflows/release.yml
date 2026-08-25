@@ -92,6 +92,16 @@ jobs:
       - name: Remove non-Windows FFmpeg
         shell: pwsh
         run: Remove-Item -Recurse -Force src-tauri/resources/ffmpeg/macos-universal
+      - name: Verify Windows FFmpeg M4A support
+        shell: pwsh
+        run: |
+          $ffmpeg = "src-tauri/resources/ffmpeg/windows-x64/ffmpeg.exe"
+          $demuxers = (& $ffmpeg -hide_banner -demuxers 2>&1 | Out-String)
+          if ($demuxers -notmatch 'mov,mp4,m4a') { throw "FFmpeg is missing the M4A/MP4 demuxer" }
+          $decoders = (& $ffmpeg -hide_banner -decoders 2>&1 | Out-String)
+          foreach ($decoder in 'aac', 'alac', 'ac3', 'eac3') {
+            if ($decoders -notmatch "(?m)\s$decoder\s") { throw "FFmpeg is missing the $decoder decoder" }
+          }
       - run: npm run tauri -- build --target x86_64-pc-windows-msvc
       - uses: actions/upload-artifact@v4
         with:
