@@ -1,0 +1,38 @@
+name: Bug report
+description: Report a reproducible problem in QM Unlock
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Never include authst, ekey, QQ number, downloaded music, or other account data.
+  - type: input
+    id: app-version
+    attributes:
+      label: QM Unlock version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS Apple Silicon
+        - macOS Intel
+        - Windows x64
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: Describe the action and expected result without personal data.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized error message or screenshot
+      description: Remove credentials, keys, account details, filenames and personal paths before posting.

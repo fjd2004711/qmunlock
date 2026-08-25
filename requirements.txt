@@ -1,0 +1,5 @@
+# 解密核心只用 Python 标准库，无第三方 pip 依赖。
+# 转码需要 ffmpeg（或 macOS 自带 afconvert 自动回退）：
+#   brew install ffmpeg
+# 可选（测试）：
+pytest>=7

@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+
+# Desktop build dependencies and artifacts
+desktop/node_modules/
+desktop/dist/
+desktop/src-tauri/target/
+
+# macOS
+.DS_Store
+
+# 输出 / 临时
+out/
+output/
+*.mp3
+*.ogg
+*.m4a
+*.flac
+
+# 大文件测试向量（可选保留）
+# tests/fixtures/mgg_head_64.bin
+
+# app 副本（运行时依赖，不入库）
+*.app
+
+# 沙盒凭据（万一被拷进来，别提交；hook.entitlements 不受影响）
+*.plist
+
+# 本机调试记录与真实下载样例（不得提交）
+NOTES.md
+notes/captures.jsonl
+references/
+tests/fixtures/ekey_*.txt
+tests/fixtures/mgg_head_*.bin

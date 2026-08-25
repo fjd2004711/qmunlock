@@ -1,0 +1,9 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "QM Unlock",
+  "version": "0.1.0",
+  "identifier": "com.qmunlock.desktop",
+  "build": { "beforeDevCommand": "npm run dev", "devUrl": "http://localhost:1420", "beforeBuildCommand": "npm run build", "frontendDist": "../dist" },
+  "app": { "windows": [{ "title": "QM Unlock", "width": 980, "height": 720, "minWidth": 720, "minHeight": 560, "resizable": true, "center": true }], "security": { "csp": "default-src 'self' asset: tauri:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://u.y.qq.com; img-src 'self' asset: tauri: data:" } },
+  "bundle": { "active": true, "category": "Utility", "shortDescription": "Decrypt local musicex downloads", "longDescription": "Decrypt local QQ Music musicex files using the current user's authorized credentials.", "resources": ["resources/ffmpeg"], "icon": ["icons/32x32.png", "icons/64x64.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"] }
+}

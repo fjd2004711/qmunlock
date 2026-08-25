@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" shape-rendering="crispEdges">
+  <!-- Pixel-art QM Unlock mark: a music note protected by a bright lock. -->
+  <path fill="#0b1a27" d="M96 32h320v32h32v32h32v320h-32v32h-32v32H96v-32H64v-32H32V96h32V64h32z"/>
+  <path fill="#19384a" d="M96 48h320v32h32v352h-32v32H96v-32H64V80h32z"/>
+  <path fill="#244b5c" d="M96 48h320v16H96zM64 96h16v320H64z"/>
+  <path fill="#317064" d="M416 80h32v32h-32zM80 416h32v32H80z"/>
+
+  <!-- small pixel glints -->
+  <path fill="#f2b85b" d="M112 112h16v16h-16zM128 96h16v16h-16zM128 128h16v16h-16zM144 112h16v16h-16z"/>
+  <path fill="#5ee0bd" d="M368 128h16v32h-16zM384 144h16v16h-16zM352 144h16v16h-16z"/>
+
+  <!-- shackle -->
+  <path fill="#5ee0bd" d="M160 240V176h16v-32h32v-16h96v16h32v32h16v64h-32v-64h-16v-16h-96v16h-16v64z"/>
+  <path fill="#0f2736" d="M208 224v-48h96v48h-32v-16h-32v16z"/>
+
+  <!-- lock body -->
+  <path fill="#47cfae" d="M128 224h256v192h-16v32H144v-32h-16z"/>
+  <path fill="#28586a" d="M144 240h224v160h-16v16H160v-16h-16z"/>
+  <path fill="#21495a" d="M160 256h192v128H160z"/>
+
+  <!-- pixel music note -->
+  <path fill="#f5c66d" d="M256 256h80v32h-48v80h-32v-80h-32v-32h32z"/>
+  <path fill="#f5c66d" d="M208 336h48v48h-16v16h-48v-16h-16v-32h16v-16h16z"/>
+  <path fill="#ffe2a1" d="M272 272h48v16h-48zM208 352h32v16h-32z"/>
+
+  <!-- keyhole pixel highlight -->
+  <path fill="#83f0d0" d="M320 304h16v32h-16zM304 320h48v16h-48zM320 336h16v32h-16z"/>
+</svg>
