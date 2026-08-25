@@ -11,6 +11,28 @@ sys.path.insert(0, os.path.join(HERE, '..'))
 from qmunlock import qmc2  # noqa: E402
 
 
+def test_raw_api_key_with_tea_shaped_length_stays_raw():
+    """原始 API key 长度恰好对齐时，不能被误判成 EncV1。"""
+    import base64
+    raw_key = bytes((i * 37 + 11) & 0xff for i in range(32))
+    assert qmc2.derive_key(base64.b64encode(raw_key).decode()) == raw_key
+
+
+def test_map_matches_qmstreamencrypt_mapl():
+    """QQ Music 的 mapL 用同向移位 OR，不是标准 rotate-left。"""
+    key = b"ABCDEFGHIJKLMNOP"
+    value = bytearray(16)
+    qmc2.map_decrypt(value, key)
+    assert value == bytes([
+        0x3F, 0x8A, 0xC1, 0x49, 0x3F, 0x49, 0xC1, 0x8A,
+        0x3F, 0x8A, 0xC1, 0x49, 0x3F, 0x49, 0xC1, 0x8A,
+    ])
+
+
+def test_detects_m4a_container():
+    assert qmc2.detect_fmt(b'\x00\x00\x00\x18ftypmp42') == 'm4a'
+
+
 def test_tea_roundtrip_block():
     # TEA 单块：加密再解密应还原（用同一 key）
     key = bytes([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88] * 2)

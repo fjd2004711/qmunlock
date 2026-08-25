@@ -153,7 +153,7 @@ export default function App() {
     try {
       const result = await invoke<ScanResult>("scan_paths", { paths: candidates });
       if (!result.files.length) {
-        setNotice("没有找到 .mgg 或 .mflac 文件");
+        setNotice("没有找到 .mgg、.mflac 或 .mmp4 文件");
         return;
       }
       setPaths((old) => uniquePaths([...old, ...result.files]));
@@ -189,7 +189,7 @@ export default function App() {
   const chooseFiles = async () => {
     const picked = await open({
       multiple: true,
-      filters: [{ name: "QQ 音乐加密文件", extensions: ["mgg", "mflac"] }],
+      filters: [{ name: "QQ 音乐加密文件", extensions: ["mgg", "mflac", "mmp4"] }],
     });
     if (Array.isArray(picked)) void scanIncoming(picked);
     else if (typeof picked === "string") void scanIncoming([picked]);
@@ -210,9 +210,9 @@ export default function App() {
     const dropped = Array.from(event.dataTransfer.files)
       .map((file) => (file as File & { path?: string }).path)
       .filter((path): path is string => Boolean(path));
-    const supported = dropped.filter((path) => ["mgg", "mflac"].includes(extension(path)) || !extension(path));
+    const supported = dropped.filter((path) => ["mgg", "mflac", "mmp4"].includes(extension(path)) || !extension(path));
     if (!supported.length) {
-      setNotice("请选择 .mgg 或 .mflac 文件，也可以直接拖入包含它们的文件夹");
+      setNotice("请选择 .mgg、.mflac 或 .mmp4 文件，也可以直接拖入包含它们的文件夹");
       return;
     }
     void scanIncoming(supported);
@@ -273,7 +273,7 @@ export default function App() {
   const canStart = paths.length > 0 && keyReady && !running;
   const currentStep = running ? 3 : jobs.length ? 4 : paths.length && keyReady ? 3 : paths.length ? 2 : 1;
   const inputSummary = useMemo(() => {
-    if (!paths.length) return "等待添加 .mgg 或 .mflac";
+    if (!paths.length) return "等待添加 .mgg、.mflac 或 .mmp4";
     const folders = paths.filter((path) => !extension(path));
     return folders.length ? `${paths.length} 个输入项，包含文件夹` : `${paths.length} 个加密文件`;
   }, [paths]);
@@ -321,7 +321,7 @@ export default function App() {
             <div>
               <span className="section-kicker">本地音乐工作台 / {credentials?.platform || "跨平台"}</span>
               <h1>解密 QQ 音乐加密文件</h1>
-              <p>从下载的 `.mgg` / `.mflac` 中恢复音频，再按需要转换为 MP3。</p>
+              <p>从下载的 `.mgg` / `.mflac` / `.mmp4` 中恢复音频，再按需要转换为 MP3。</p>
             </div>
             <div className="heading-status"><span className={`status-dot ${running ? "busy" : jobs.length ? "complete" : ""}`} />{running ? "处理中" : jobs.length ? "任务已完成" : "准备就绪"}</div>
           </div>
@@ -333,7 +333,7 @@ export default function App() {
             </div>
             <div className={`dropzone ${paths.length ? "has-items" : ""} ${dragActive ? "drag-active" : ""}`} onDragOver={(event) => event.preventDefault()} onDrop={handleDrop}>
               <div className="drop-icon"><Upload size={21} /></div>
-              <strong>{dragActive ? "松开以添加文件" : paths.length ? "继续添加文件" : "拖入 .mgg / .mflac 文件或文件夹"}</strong>
+              <strong>{dragActive ? "松开以添加文件" : paths.length ? "继续添加文件" : "拖入 .mgg / .mflac / .mmp4 文件或文件夹"}</strong>
               <span>{dragActive ? "将自动扫描文件夹并解析 musicex footer" : "支持批量选择，文件夹会递归扫描"}</span>
               <div className="drop-actions">
                 <button className="outline-button" onClick={() => void chooseFiles()}><Plus size={16} />选择文件</button>
@@ -349,7 +349,7 @@ export default function App() {
                 const active = running && progress?.input === path;
                 return <div className="file-row" key={path}>
                   <div className="file-type-icon"><FileAudio size={17} /></div>
-                  <div className="file-main"><strong title={path}>{basename(path)}</strong><span title={path}>{isFolder ? "文件夹 · 将递归扫描 .mgg / .mflac" : path}</span></div>
+                  <div className="file-main"><strong title={path}>{basename(path)}</strong><span title={path}>{isFolder ? "文件夹 · 将递归扫描 .mgg / .mflac / .mmp4" : path}</span></div>
                   <div className={`file-state ${active ? "active" : info?.supported === false ? "bad" : info?.supported ? "good" : "pending"}`}>
                     {active ? <><LoaderCircle size={14} className="spin" />{progress?.phase === "parse" ? "解析中" : progress?.phase === "ekey" ? "获取 ekey" : progress?.phase === "transcode" ? "转码中" : "解密中"}</> : info?.supported === false ? <><AlertCircle size={14} />不可用</> : info?.supported ? <><FileCheck2 size={14} />已识别</> : isFolder ? <><FolderOpen size={14} />待扫描</> : <><LoaderCircle size={14} className="spin" />检查中</>}
                   </div>
@@ -379,7 +379,7 @@ export default function App() {
             <section className="section-panel output-panel">
               <div className="panel-heading compact"><div className="panel-title"><span className="step-number">03</span><div><h2>输出设置</h2><p>选择解密后的文件格式和位置</p></div></div></div>
               <div className="output-mode" role="tablist" aria-label="输出格式">
-                <button className={mode === "original" ? "active" : ""} onClick={() => setMode("original")}><FileAudio size={16} /><span><strong>原始格式</strong><small>OGG / FLAC / MP3</small></span></button>
+                <button className={mode === "original" ? "active" : ""} onClick={() => setMode("original")}><FileAudio size={16} /><span><strong>原始格式</strong><small>OGG / FLAC / M4A / MP3</small></span></button>
                 <button className={mode === "mp3" ? "active" : ""} onClick={() => setMode("mp3")}><CircleDot size={16} /><span><strong>转换为 MP3</strong><small>内置 FFmpeg + LAME</small></span></button>
               </div>
               <button className="output-path" onClick={() => void chooseOutput()} title={outputDir || "默认写回源文件目录"}><FolderOpen size={16} /><span><small>输出目录</small><strong>{outputDir || "与源文件相同"}</strong></span><ChevronRight size={15} /></button>

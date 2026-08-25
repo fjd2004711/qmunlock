@@ -56,6 +56,8 @@ pub fn detect_format(data: &[u8]) -> &'static str {
         "ogg"
     } else if data.starts_with(b"fLaC") {
         "flac"
+    } else if data.len() >= 8 && &data[4..8] == b"ftyp" {
+        "m4a"
     } else if data.starts_with(b"ID3") || data.first() == Some(&0xff) {
         "mp3"
     } else {
@@ -68,7 +70,10 @@ fn map_decrypt(data: &mut [u8], key: &[u8], offset: u64) {
         let off = (offset + i as u64) % 0x7fff;
         let index = ((off * off + 71214) % key.len() as u64) as usize;
         let shift = ((index as u32 & 7) + 4) & 7;
-        let value = key[index].rotate_left(shift);
+        // QMStreamEncrypt's historical mapL is not a normal bit rotation:
+        // it ORs the byte shifted in both directions by the same amount.
+        // Matching this quirk is necessary for current musicex/QMC2 files.
+        let value = ((u32::from(key[index]) << shift) | (u32::from(key[index]) >> shift)) as u8;
         *byte ^= value;
     }
 }
@@ -194,6 +199,30 @@ fn tencent_tea_decrypt(data: &[u8], key: &[u8; 16]) -> Result<Vec<u8>> {
         output.push(block[pos] ^ previous[pos]);
         pos += 1;
     }
+    // A valid Tencent-TEA payload ends in seven zero bytes.  Without this
+    // check, arbitrary raw API keys whose length is divisible by eight can be
+    // falsely accepted as an EncV1 body.
+    let mut zero_count = 0usize;
+    while zero_count < 7 {
+        if pos == 8 {
+            if input + 8 > data.len() {
+                return Err(Error::from("TC-TEA 数据截断"));
+            }
+            previous = current;
+            current.copy_from_slice(&data[input..input + 8]);
+            for i in 0..8 {
+                block[i] ^= current[i];
+            }
+            block = decrypt_block(block, key);
+            input += 8;
+            pos = 0;
+        }
+        if block[pos] ^ previous[pos] != 0 {
+            return Err(Error::from("TC-TEA 尾部校验失败"));
+        }
+        pos += 1;
+        zero_count += 1;
+    }
     Ok(output)
 }
 
@@ -237,16 +266,38 @@ mod tests {
         map_decrypt(&mut value, key, 0);
         assert_eq!(value, original);
     }
+
+    #[test]
+    fn map_matches_qmstreamencrypt_mapl() {
+        let key = *b"ABCDEFGHIJKLMNOP";
+        let mut value = [0u8; 16];
+        map_decrypt(&mut value, &key, 0);
+        assert_eq!(
+            value,
+            [
+                0x3f, 0x8a, 0xc1, 0x49, 0x3f, 0x49, 0xc1, 0x8a, 0x3f, 0x8a, 0xc1, 0x49, 0x3f, 0x49,
+                0xc1, 0x8a,
+            ]
+        );
+    }
     #[test]
     fn detects_headers() {
         assert_eq!(detect_format(b"OggS"), "ogg");
         assert_eq!(detect_format(b"fLaC"), "flac");
+        assert_eq!(detect_format(b"\0\0\0\x18ftypmp42"), "m4a");
     }
 
     #[test]
     fn accepts_raw_api_key_when_tea_body_is_not_encv1() {
         let raw = b"raw-api-key!";
         let encoded = STANDARD.encode(raw);
+        assert_eq!(derive_key(&encoded).unwrap(), raw);
+    }
+
+    #[test]
+    fn accepts_raw_api_key_when_tea_body_is_block_aligned() {
+        let raw: Vec<u8> = (0..32).map(|i| ((i * 37 + 11) & 0xff) as u8).collect();
+        let encoded = STANDARD.encode(&raw);
         assert_eq!(derive_key(&encoded).unwrap(), raw);
     }
 

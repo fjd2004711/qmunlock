@@ -1,4 +1,4 @@
-"""解析 musicex 格式 .mgg/.mflac 文件的尾部（footer）。
+"""解析 musicex 格式 .mgg/.mflac/.mmp4 文件的尾部（footer）。
 
 musicex footer（192 字节）在文件末尾，结构：
     +0x00  uint32 LE   song_id
@@ -43,7 +43,7 @@ def parse_footer(data):
     if m:
         mid = m.group(1)
     fname = None
-    m = re.search(r'((?:[A-Z]+\d+)[0-9a-zA-Z]+\.m(?:gg|flac))', tail)
+    m = re.search(r'((?:[A-Z]+\d+)[0-9a-zA-Z]+\.m(?:gg|flac|mp4))', tail)
     if m:
         fname = m.group(1)
     if not (mid and fname):

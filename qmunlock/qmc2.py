@@ -1,6 +1,6 @@
 """QMC2 (musicex) 核心解密算法 —— 纯函数，无 I/O，无外部依赖。
 
-QQ音乐 Mac 新版 (≥19.57) 用 musicex 格式存加密音频 (.mgg / .mflac)。
+QQ音乐 Mac 新版使用 musicex 格式存加密音频 (.mgg / .mflac / .mmp4)。
 解密链路：ekey(base64) → 可选 EncV2 双层 TEA 剥壳 → 密钥推导(TEA-CBC) →
 按密钥长度走 Map-XOR(≤300B) 或 分段 RC4(>300B)。
 
@@ -87,6 +87,19 @@ def tencent_tea_dec(data, key):
             op += 1
         else:
             crypt_block()
+
+    # Tencent-TEA appends seven zero bytes after the payload.  This is the
+    # integrity check that distinguishes an EncV1 body from arbitrary raw API
+    # key bytes of a multiple-of-eight length.
+    checked = 0
+    while checked < 7:
+        if state['destIdx'] < 8:
+            if (dest[state['destIdx']] ^ ivPrev[state['destIdx']]) != 0:
+                raise ValueError("tea: zero padding invalid")
+            state['destIdx'] += 1
+            checked += 1
+        else:
+            crypt_block()
     return bytes(out)
 
 
@@ -123,7 +136,12 @@ def derive_key(ekey_b64):
     for i in range(8):
         tk[2 * i] = SIMPLE_KEY[i]
         tk[2 * i + 1] = dec[i]
-    body = tencent_tea_dec(dec[8:], bytes(tk))
+    # GetEVkey may return either EncV1 or already-decoded raw key bytes.  A
+    # valid EncV1 body must pass Tencent-TEA's trailing-zero integrity check.
+    try:
+        body = tencent_tea_dec(dec[8:], bytes(tk))
+    except ValueError:
+        return dec
     return dec[:8] + body
 
 
@@ -137,7 +155,11 @@ def _map_mask(key, off):
     idx = (off * off + 71214) % size
     v = key[idx] & 0xff
     r = ((idx & 7) + 4) % 8
-    return ((v << r) & 0xff) | (v >> (8 - r)) if r else (v & 0xff)
+    # This looks like a rotate, but QQ Music's QMStreamEncrypt uses the
+    # historical mapL expression ``(value << r) | (value >> r)``.  It is
+    # deliberately *not* a normal rotate-right operand of ``8 - r``.
+    # Keeping that quirk is required for current musicex/QMC2 files.
+    return ((v << r) | (v >> r)) & 0xff if r else v
 
 
 def map_decrypt(buf, key, off0=0):
@@ -234,6 +256,8 @@ def detect_fmt(b):
         return 'flac'
     if b[:4] == b'OggS':
         return 'ogg'
+    if b[4:8] == b'ftyp':
+        return 'm4a'
     if b[0] == 0xFF and b[1] in (0xF2, 0xF3, 0xFB):
         return 'mp3'
     return 'bin'

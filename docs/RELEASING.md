@@ -9,9 +9,9 @@
 ## Unsigned release
 
 1. Create and push a tag in the form `vX.Y.Z`.
-2. The **Release desktop app** workflow builds macOS universal and Windows x64 packages.
+2. The **Release desktop app** workflow builds macOS arm64 (Apple Silicon), macOS x64 (Intel), and Windows x64 packages.
 3. It creates a GitHub Release and attaches the `.dmg`, `.exe`, and `.msi` files.
-4. Test both packages on clean machines before marking the release as stable.
+4. Test each target package on a clean machine before marking the release as stable.
 
 The default workflow is intentionally unsigned and requires no secrets.
 

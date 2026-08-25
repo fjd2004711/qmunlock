@@ -28,6 +28,14 @@ jobs:
   bundle-macos:
     needs: build-ffmpeg
     runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            artifact: qmunlock-macos-arm64
+          - target: x86_64-apple-darwin
+            artifact: qmunlock-macos-x64
     defaults:
       run:
         working-directory: desktop
@@ -40,7 +48,7 @@ jobs:
           cache-dependency-path: desktop/package-lock.json
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-apple-darwin,aarch64-apple-darwin
+          targets: ${{ matrix.target }}
       - run: npm ci
       - uses: actions/download-artifact@v4
         with:
@@ -50,12 +58,12 @@ jobs:
         run: rm -rf src-tauri/resources/ffmpeg/windows-x64
       - name: Restore macOS FFmpeg permissions
         run: chmod 0755 src-tauri/resources/ffmpeg/macos-universal/ffmpeg
-      - run: npm run tauri -- build --target universal-apple-darwin
+      - run: npm run tauri -- build --target ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:
-          name: qmunlock-universal-apple-darwin
+          name: ${{ matrix.artifact }}
           path: |
-            desktop/src-tauri/target/universal-apple-darwin/release/bundle/**/*.dmg
+            desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.dmg
 
   bundle-windows:
     needs: build-ffmpeg

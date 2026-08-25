@@ -32,6 +32,7 @@ pub fn parse_file(path: &Path) -> Result<MusicExFooter> {
     }
     if !filename.to_ascii_lowercase().ends_with(".mgg")
         && !filename.to_ascii_lowercase().ends_with(".mflac")
+        && !filename.to_ascii_lowercase().ends_with(".mmp4")
     {
         return Err(Error::from("musicex footer 的资源文件名扩展名非法"));
     }

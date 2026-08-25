@@ -20,7 +20,7 @@ def _ekey_cache():
 
 
 def convert_mgg(mgg_path, outdir=None, cred=None, platform="20", log=print):
-    """解密单个 .mgg/.mflac，转成 mp3（或回退 m4a）。返回输出文件路径。
+    """解密单个 .mgg/.mflac/.mmp4，转成 mp3（或保留原始容器）。返回输出文件路径。
 
     参数：
       mgg_path   加密文件路径
@@ -49,7 +49,7 @@ def convert_mgg(mgg_path, outdir=None, cred=None, platform="20", log=print):
 
     # 4. 落地 + 转 mp3
     base = os.path.splitext(os.path.basename(mgg_path))[0]
-    ext = fmt if fmt in ('ogg', 'flac', 'mp3') else 'bin'
+    ext = fmt if fmt in ('ogg', 'flac', 'm4a', 'mp3') else 'bin'
     mid_path = os.path.join(outdir, base + '.' + ext)
     with open(mid_path, 'wb') as f:
         f.write(plaintext)
@@ -60,7 +60,7 @@ def convert_mgg(mgg_path, outdir=None, cred=None, platform="20", log=print):
 
 
 def convert_directory(dir_path, outdir=None, cred=None, platform="20",
-                      exts=(".mgg", ".mflac"), log=print):
+                      exts=(".mgg", ".mflac", ".mmp4"), log=print):
     """批量解密目录下所有加密文件。
 
     返回 [{input, output, ok, error}] 列表。单首失败不中断整批。

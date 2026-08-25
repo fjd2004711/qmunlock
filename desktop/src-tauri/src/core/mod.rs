@@ -105,6 +105,6 @@ pub fn supported_path(path: &Path) -> bool {
             .and_then(|x| x.to_str())
             .map(|x| x.to_ascii_lowercase())
             .as_deref(),
-        Some("mgg") | Some("mflac")
+        Some("mgg") | Some("mflac") | Some("mmp4")
     )
 }
