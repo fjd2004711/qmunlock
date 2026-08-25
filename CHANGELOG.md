@@ -2,7 +2,7 @@
 
 All notable changes to QM Unlock are documented here.
 
-## [0.1.1-dev.0] - Unreleased
+## [0.1.1-0] - Unreleased
 
 ### Added
 
