@@ -13,7 +13,7 @@
 3. It creates a GitHub Release and attaches the `.dmg`, `.exe`, and `.msi` files.
 4. Test each target package on a clean machine before marking the release as stable.
 
-The default workflow is intentionally unsigned and requires no secrets.
+The default workflow ad-hoc signs the completed macOS app, verifies the app and nested code, then creates the DMG. It requires no secrets, does not identify a developer, and does not replace Developer ID signing or notarization; macOS may still require the user to choose “Open Anyway”.
 
 ## Optional signing
 

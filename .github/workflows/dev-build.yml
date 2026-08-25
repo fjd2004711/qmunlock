@@ -59,7 +59,10 @@ jobs:
         run: |
           rm -rf src-tauri/resources/ffmpeg/windows-x64
           chmod 0755 src-tauri/resources/ffmpeg/macos-universal/ffmpeg
-      - run: npm run tauri -- build --target ${{ matrix.target }}
+      - name: Build macOS app bundle
+        run: npm run tauri -- build --bundles app --target ${{ matrix.target }}
+      - name: Ad-hoc sign, verify, and package DMG
+        run: ./scripts/sign-and-package-macos.sh ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}

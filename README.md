@@ -68,16 +68,16 @@ QM Unlock 是一个 Rust + Tauri 2 桌面应用，处理带 `musicex V1 footer` 
 | 🍎 macOS（Intel） | `QM Unlock_*_x64.dmg` | x64 |
 | 🪟 Windows | `QM Unlock_*_x64-setup.exe` | x64 |
 
-### 未签名测试包的首次运行
+### 开发包的首次运行
 
-当前 Release 可以不签名发布和本地使用，功能没有区别；区别只在系统首次运行时的提示。
+macOS 包会在 DMG 创建前完成 ad-hoc 签名与完整性验证，但它不带 Developer ID；Windows 包目前也不带 Authenticode 签名。因此系统首次运行仍可能显示来源提示。
 
 | 系统 | 可能的提示 | 处理方式 |
 | --- | --- | --- |
-| macOS | Gatekeeper 提示无法验证开发者 | 在 Finder 中按住 Control 点按应用，选择“打开”，再确认一次。 |
+| macOS | Gatekeeper 提示无法验证开发者 | 在“系统设置 → 隐私与安全性”中选择“仍要打开”，或在 Finder 中按住 Control 点按应用并选择“打开”。 |
 | Windows | Microsoft Defender SmartScreen 提示未知发布者 | 只从本仓库 Releases 下载；确认来源后可在“更多信息”中继续。 |
 
-面向广泛用户正式分发时，建议启用 macOS Developer ID 签名与公证、Windows Authenticode 签名。签名并不是本地使用的前提。
+面向广泛用户正式分发时，仍建议启用 macOS Developer ID 签名与公证、Windows Authenticode 签名；ad-hoc 签名不等同于开发者身份签名。
 
 ## 快速使用
 
@@ -149,7 +149,7 @@ QM Unlock 是一个 Rust + Tauri 2 桌面应用，处理带 `musicex V1 footer` 
 <details>
 <summary><strong>macOS 提示“无法打开”或“无法验证开发者”</strong></summary>
 
-这是未签名测试包的 Gatekeeper 提示，不代表应用功能异常。请从 Releases 重新下载，然后在 Finder 中按住 Control 点按应用并选择“打开”。
+这是未带 Developer ID 的开发包的 Gatekeeper 提示，不代表应用已损坏。请从 Releases 或 Actions Artifacts 重新下载，再在“系统设置 → 隐私与安全性”中选择“仍要打开”。
 
 </details>
 
@@ -196,7 +196,7 @@ python3 tests/test_decrypt.py
 ### CI 与 Release
 
 - Pull Request 和主分支推送会运行 macOS / Windows 构建验证。
-- 推送 `vX.Y.Z` 标签会构建 macOS arm64、macOS x64 与 Windows x64 安装包，并创建未签名 GitHub Release。
+- 推送 `vX.Y.Z` 标签会构建 macOS arm64、macOS x64 与 Windows x64 安装包；macOS `.app` 会 ad-hoc 签名并严格验证后再生成 DMG。
 - 完整发布步骤见 [docs/RELEASING.md](docs/RELEASING.md)，变更记录见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 项目结构
